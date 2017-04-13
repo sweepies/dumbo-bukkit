@@ -1,0 +1,20 @@
+name: Dumbo
+main: science.amberfall.Dumbo
+version: 1.0
+author: Sweepyoface
+website: https://github.com/Sweepyoface/dumbo-bukkit/
+commands:
+  dumbo:
+    description: Get a random QBall quote.
+    usage: /dumbo
+  dumbo reload:
+      description: Reload the Dumbo config.
+      usage: /dumbo reload
+  
+permissions:
+   dumbo.quote:
+    description: /dumbo command
+    default: op
+   dumbo.reload:
+    description: /dumbo reload command
+    default: op

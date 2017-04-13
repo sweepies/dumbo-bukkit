@@ -54,6 +54,7 @@ public class Dumbo extends JavaPlugin implements Listener {
 						"<Qball> Maybe I'll bother learning it when its a full release and the syntax actually makes sense",
 						"<Qball> I think you go async to avoid crashing server",
 						"<Qball> well zombies need sleep to I think",
+						"<Qball> Redrield: I think so I don't see any Koltin Developer jobs out there I see Java Developer jobs",
 						"<Qball> what if Java went native" 
 				};
 				

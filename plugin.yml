@@ -5,7 +5,7 @@ author: Sweepyoface
 website: https://github.com/Sweepyoface/dumbo-bukkit/
 commands:
   dumbo:
-    description: Get a random QBall quote.
+    description: Get a random Qball quote.
     usage: /dumbo
   dumbo reload:
       description: Reload the Dumbo config.

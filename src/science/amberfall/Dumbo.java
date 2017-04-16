@@ -54,7 +54,9 @@ public class Dumbo extends JavaPlugin implements Listener {
                     "<Qball> I think you go async to avoid crashing server",
                     "<Qball> well zombies need sleep to I think",
                     "<Qball> Redrield: I think so I don't see any Koltin Developer jobs out there I see Java Developer jobs",
-                    "<Qball> what if Java went native" 
+                    "<Qball> what if Java went native",
+                    "<Qball> Redrield: you don't own the domain redrield.com so why you use it here",
+                    "<Qball> well botspam.redrield.com isn't a thing"
                 };
                 
                 String color = "&6";

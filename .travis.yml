@@ -1,0 +1,12 @@
+language: java
+jdk:
+  - openjdk8
+  - openjdk7
+script: mvn compile test
+install: true
+notifications:
+  irc: 
+    channels: 
+      - "irc.spi.gt#amberfall"
+    on_success: change
+    on_failure: always

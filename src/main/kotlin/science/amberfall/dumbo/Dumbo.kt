@@ -17,21 +17,23 @@ import java.util.*
 class Dumbo : JavaPlugin(), Listener {
 
     override fun onEnable() {
-        createConfig()
-        server.pluginManager.registerEvents(this, this)
+        if (server.version.contains("git-Spigot")) {
+            val console = server.consoleSender
 
-        if(server.version.contains("git-Spigot")) {
-            logger.info("We highly recommend that you use Paper over Spigot, as they have been hostile to me personally and the development of this plugin. Paper offers many performance improvements and optimizations over Spigot. Please download and install Paper from https://paperci.emc.gs to use this plugin.".red())
+            console.sendMessage("[Dumbo]" + "We highly recommend that you use Paper over Spigot, as they have been hostile to me personally and the development of this plugin. Paper offers many performance improvements and optimizations over Spigot. Please download and install Paper from https://paperci.emc.gs to use this plugin.".red())
             server.pluginManager.disablePlugin(this)
+        } else {
+            createConfig()
+            server.pluginManager.registerEvents(this, this)
         }
     }
 
     private fun createConfig() {
-        if(!dataFolder.exists()) {
+        if (!dataFolder.exists()) {
             dataFolder.mkdirs()
         }
         val file = File(dataFolder, "config.yml")
-        if(!file.exists()) {
+        if (!file.exists()) {
             logger.info("Fetching quotes from GitHub...")
 
             val stream = URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml")
@@ -60,19 +62,19 @@ class Dumbo : JavaPlugin(), Listener {
     }
 
     override fun onCommand(sender: CommandSender, cmd: Command, label: String, args: Array<String>): Boolean {
-        if(sender is Player) {
-            if(label.equals("dumbo", true)) {
-                if(args.isEmpty()) {
-                    if(sender.hasPermission("dumbo.quote") || sender.isOp) {
+        if (sender is Player) {
+            if (label.equals("dumbo", true)) {
+                if (args.isEmpty()) {
+                    if (sender.hasPermission("dumbo.quote") || sender.isOp) {
                         server.broadcastMessage(
                                 ChatColor.translateAlternateColorCodes('&', config.getString("color") + randomQuote()))
 
-                    }else if(args[0].equals("reload", true)) {
-                        if(sender.hasPermission("dumbo.reload") || sender.isOp) {
+                    } else if (args[0].equals("reload", true)) {
+                        if (sender.hasPermission("dumbo.reload") || sender.isOp) {
                             this.reloadConfig()
                             sender.sendMessage("Dumbo config reloaded".green())
                         }
-                    }else {
+                    } else {
                         sender.sendMessage("Unknown argument. See /help dumbo".red())
                     }
                 }
@@ -83,15 +85,15 @@ class Dumbo : JavaPlugin(), Listener {
 
     @EventHandler
     fun onChat(ev: AsyncPlayerChatEvent) {
-        if(!ev.isCancelled) {
+        if (!ev.isCancelled) {
             val msgArr = ev.message.trim().split("\\s+".toRegex())
-            if(msgArr[0].equals(".dumbo", true)) {
+            if (msgArr[0].equals(".dumbo", true)) {
                 val p = ev.player
-                if(p.hasPermission("dumbo.quote") || p.isOp) {
+                if (p.hasPermission("dumbo.quote") || p.isOp) {
                     server.broadcastMessage(
                             ChatColor.translateAlternateColorCodes('&', config.getString("color") + randomQuote())
                     )
-                }else {
+                } else {
                     p.sendMessage("You do not have access to that command.".darkRed())
                 }
             }

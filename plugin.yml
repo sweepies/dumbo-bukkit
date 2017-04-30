@@ -1,6 +1,6 @@
 name: Dumbo
 main: science.amberfall.dumbo.Dumbo
-version: 1.2
+version: 1.2.1
 author: Sweepyoface
 website: https://github.com/Sweepyoface/dumbo-bukkit/
 commands:

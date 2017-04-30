@@ -1,6 +1,7 @@
 package science.amberfall.dumbo;
 
 import java.io.File;
+import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -15,22 +16,32 @@ import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
 public class Dumbo extends JavaPlugin implements Listener {
 
+    static Dumbo plugin;
+
+    public static Plugin getPlugin() {
+        JavaPlugin plugin = Dumbo.plugin;
+        return plugin;
+    }
+
     @Override
     public void onEnable() {
 
+        plugin = this;
+
         if (Bukkit.getServer().getVersion().contains("git-Spigot")) {
-        	
-        	ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
-        	
+
+            ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+
             console.sendMessage("[Dumbo]" + ChatColor.RED + "We highly recommend that you use Paper over Spigot, as they have been hostile to me personally and the development of this plugin. Paper offers many performance improvements and optimizations over Spigot. Please download and install Paper from https://paperci.emc.gs to use this plugin.");
             Bukkit.getPluginManager().disablePlugin(this);
-            
+
         } else {
             createConfig();
             Bukkit.getServer().getPluginManager().registerEvents(this, this);
@@ -43,28 +54,47 @@ public class Dumbo extends JavaPlugin implements Listener {
 
     private void createConfig() {
         try {
+
             if (!getDataFolder().exists()) {
                 getDataFolder().mkdirs();
             }
+
             File file = new File(getDataFolder(), "config.yml");
+
             if (!file.exists()) {
-
                 getLogger().info("Fetching quotes from GitHub..");
+                Bukkit.getScheduler().runTaskAsynchronously(Dumbo.getPlugin(), new Runnable() {
 
-                InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
-                YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader( in ));
+                    @Override
+                    public void run() {
 
-                String color = "&6";
+                        InputStream in = null;
 
-                this.getConfig().addDefault("color", color);
-                this.getConfig().addDefault("quotes", yaml.getStringList("quotes"));
+                        try { in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
 
-                this.getConfig().options().copyDefaults(true);
-                saveConfig();
-                reloadConfig();
+                        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader( in ));
+                        Bukkit.getScheduler().runTask(Dumbo.getPlugin(), new Runnable() {
 
-                getLogger().info("Done!");
+                            @Override
+                            public void run() {
+                                String color = "&6";
+                                Dumbo.getPlugin().getConfig().addDefault("color", color);
+                                Dumbo.getPlugin().getConfig().addDefault("quotes", yaml.getStringList("quotes"));
+                                Dumbo.getPlugin().getConfig().options().copyDefaults(true);
+                                saveConfig();
+                                reloadConfig();
+                                getLogger().info("Done!");
+                            }
+
+                        });
+                    }
+                });
+
             }
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -73,10 +103,15 @@ public class Dumbo extends JavaPlugin implements Listener {
     public String randomQuote() {
 
         Random random = new Random();
-        List < String > quotes = this.getConfig().getStringList("quotes");
-        Integer quote = random.nextInt(quotes.size());
 
-        return (String) quotes.get(quote);
+        List < String > quotes = this.getConfig().getStringList("quotes");
+
+        if (quotes.size() == 0) {
+            return "false";
+        } else {
+            Integer quote = random.nextInt(quotes.size());
+            return quotes.get(quote);
+        }
     }
 
     @Override
@@ -87,7 +122,12 @@ public class Dumbo extends JavaPlugin implements Listener {
         if (label.equalsIgnoreCase(("dumbo")) && sender instanceof Player) {
             if (args.length == 0) {
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
-                    Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + randomQuote());
+                    String quote = randomQuote();
+                    if (quote == "false") {
+                        player.sendMessage(ChatColor.DARK_RED + "Error: Quotes are still being initialized, please wait or contact a server administrator.");
+                    } else {
+                        Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + quote);
+                    }
                 }
             } else if (args[0].equalsIgnoreCase("reload")) {
                 if (player.hasPermission("dumbo.reload") || player.isOp()) {
@@ -108,7 +148,12 @@ public class Dumbo extends JavaPlugin implements Listener {
             if (msgArray[0].equalsIgnoreCase(".dumbo")) {
                 Player player = (Player) ev.getPlayer();
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
-                    Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + randomQuote());
+                    String quote = randomQuote();
+                    if (quote == "false") {
+                        player.sendMessage(ChatColor.DARK_RED + "Error: Quotes are still being initialized, please wait or contact a server administrator.");
+                    } else {
+                        Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + quote);
+                    }
                 } else {
                     player.sendMessage(ChatColor.DARK_RED + "You do not have access to that command.");
                 }

@@ -1,8 +1,7 @@
 language: java
 jdk:
   - oraclejdk8
-  - openjdk8
-script: mvn build shadowJar check
+script: gradle build shadowJar check
 notifications:
   irc: 
     channels: 

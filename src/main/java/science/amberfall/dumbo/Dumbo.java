@@ -1,12 +1,7 @@
 package science.amberfall.dumbo;
 
-import java.io.File;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.List;
-import java.util.Random;
-
+import co.aikar.taskchain.BukkitTaskChainFactory;
+import co.aikar.taskchain.TaskChainFactory;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
@@ -14,12 +9,23 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
-import org.bukkit.event.player.AsyncPlayerChatEvent;
-import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.plugin.java.JavaPlugin;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Dumbo extends JavaPlugin implements Listener {
+
+    private TaskChainFactory taskChainFactory;
+    private AtomicBoolean readyToQuote = new AtomicBoolean(false);
 
     @Override
     public void onEnable() {
@@ -32,6 +38,7 @@ public class Dumbo extends JavaPlugin implements Listener {
             Bukkit.getPluginManager().disablePlugin(this);
             
         } else {
+            taskChainFactory = BukkitTaskChainFactory.create(this);
             createConfig();
             Bukkit.getServer().getPluginManager().registerEvents(this, this);
         }
@@ -51,17 +58,25 @@ public class Dumbo extends JavaPlugin implements Listener {
 
                 getLogger().info("Fetching quotes from GitHub..");
 
-                InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
-                YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader( in ));
+                taskChainFactory.newChain().asyncFirst(() -> {
+                    try {
+                        return new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
+                    }catch(IOException e) {
+                        getLogger().severe("Unable to fetch quotes from Github.");
+                        getServer().getPluginManager().disablePlugin(this);
+                        return null;
+                    }
+                }).abortIfNull().syncLast(in -> {
+                    YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in));
+                    String colour = "&6";
 
-                String color = "&6";
+                    getConfig().addDefault("color", colour);
+                    getConfig().addDefault("quotes", yaml.getStringList("quotes"));
 
-                this.getConfig().addDefault("color", color);
-                this.getConfig().addDefault("quotes", yaml.getStringList("quotes"));
-
-                this.getConfig().options().copyDefaults(true);
-                saveConfig();
-                reloadConfig();
+                    getConfig().options().copyDefaults(true);
+                    saveConfig();
+                    reloadConfig();
+                }).execute(() -> readyToQuote.set(true));
 
                 getLogger().info("Done!");
             }
@@ -76,15 +91,17 @@ public class Dumbo extends JavaPlugin implements Listener {
         List < String > quotes = this.getConfig().getStringList("quotes");
         Integer quote = random.nextInt(quotes.size());
 
-        return (String) quotes.get(quote);
+        return quotes.get(quote);
     }
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
-        Player player = (Player) sender;
-
         if (label.equalsIgnoreCase(("dumbo")) && sender instanceof Player) {
+            Player player = (Player) sender;
+            if(!readyToQuote.get()) {
+                player.sendMessage(ChatColor.RED + "Quotes aren't ready to be used!");
+                return true;
+            }
             if (args.length == 0) {
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
                     Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + randomQuote());
@@ -106,7 +123,10 @@ public class Dumbo extends JavaPlugin implements Listener {
         if (!ev.isCancelled()) {
             String[] msgArray = ev.getMessage().trim().split("\\s+");
             if (msgArray[0].equalsIgnoreCase(".dumbo")) {
-                Player player = (Player) ev.getPlayer();
+                Player player = ev.getPlayer();
+                if(!readyToQuote.get()) {
+                    player.sendMessage(ChatColor.RED + "Quotes aren't ready to be used!");
+                }
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
                     Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + randomQuote());
                 } else {

@@ -1,9 +1,8 @@
 language: java
 jdk:
-  - oraclejdk7
-  - openjdk7
-script: mvn compile test
-install: true
+  - oraclejdk8
+  - openjdk8
+script: mvn build shadowJar check
 notifications:
   irc: 
     channels: 

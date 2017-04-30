@@ -11,6 +11,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
+import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -22,12 +23,17 @@ public class Dumbo extends JavaPlugin implements Listener {
 
     @Override
     public void onEnable() {
-        createConfig();
-        Bukkit.getServer().getPluginManager().registerEvents(this, this);
 
         if (Bukkit.getServer().getVersion().contains("git-Spigot")) {
-            getLogger().info(ChatColor.RED + "We highly recommend that you use Paper over Spigot, as they have been hostile to me personally and the development of this plugin. Paper offers many performance improvements and optimizations over Spigot. Please download and install Paper from https://paperci.emc.gs to use this plugin.");
+        	
+        	ConsoleCommandSender console = Bukkit.getServer().getConsoleSender();
+        	
+            console.sendMessage("[Dumbo]" + ChatColor.RED + "We highly recommend that you use Paper over Spigot, as they have been hostile to me personally and the development of this plugin. Paper offers many performance improvements and optimizations over Spigot. Please download and install Paper from https://paperci.emc.gs to use this plugin.");
             Bukkit.getPluginManager().disablePlugin(this);
+            
+        } else {
+            createConfig();
+            Bukkit.getServer().getPluginManager().registerEvents(this, this);
         }
 
     }

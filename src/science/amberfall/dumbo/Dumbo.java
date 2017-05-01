@@ -18,6 +18,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 
@@ -101,11 +102,8 @@ public class Dumbo extends JavaPlugin implements Listener {
     }
 
     public String randomQuote() {
-
         Random random = new Random();
-
-        List < String > quotes = this.getConfig().getStringList("quotes");
-
+        List <String> quotes = this.getConfig().getStringList("quotes");
         if (quotes.size() == 0) {
             return "false";
         } else {
@@ -116,9 +114,7 @@ public class Dumbo extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
         Player player = (Player) sender;
-
         if (label.equalsIgnoreCase(("dumbo")) && sender instanceof Player) {
             if (args.length == 0) {
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
@@ -133,6 +129,8 @@ public class Dumbo extends JavaPlugin implements Listener {
                 if (player.hasPermission("dumbo.reload") || player.isOp()) {
                     this.reloadConfig();
                     player.sendMessage(ChatColor.GREEN + "Dumbo config reloaded!");
+                } else {
+                    player.sendMessage(ChatColor.DARK_RED + "You do not have access to that command.");
                 }
             } else {
                 player.sendMessage(ChatColor.RED + "Unknown argument. See /help dumbo");
@@ -152,7 +150,12 @@ public class Dumbo extends JavaPlugin implements Listener {
                     if (quote == "false") {
                         player.sendMessage(ChatColor.DARK_RED + "Error: Quotes are still being initialized, please wait or contact a server administrator.");
                     } else {
-                        Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + quote);
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', Dumbo.getPlugin().getConfig().getString("color")) + quote);
+                            }
+                        }.runTaskLater(this, 1);
                     }
                 } else {
                     player.sendMessage(ChatColor.DARK_RED + "You do not have access to that command.");

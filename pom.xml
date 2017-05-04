@@ -26,6 +26,11 @@
             <artifactId>taskchain-bukkit</artifactId>
             <version>3.6.0</version>
         </dependency>
+        <dependency>
+            <groupId>co.aikar</groupId>
+            <artifactId>taskchain-core</artifactId>
+            <version>3.6.0</version>
+        </dependency>
     </dependencies>
 
     <!-- SHADE -->

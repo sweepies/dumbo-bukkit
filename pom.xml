@@ -11,7 +11,11 @@
     <repositories>
         <repository>
             <id>Aikar</id>
-            <url>http://ci.emc.gs/nexus/content/groups/aikar/co/aikar</url>
+            <url>http://ci.emc.gs/nexus/content/groups/aikar/</url>
+        </repository>
+        <repository>
+            <id>Spigot</id>
+            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
         </repository>
     </repositories>
 

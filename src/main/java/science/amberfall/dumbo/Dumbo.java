@@ -140,10 +140,10 @@ public class Dumbo extends JavaPlugin implements Listener {
             if (msgArray[0].equalsIgnoreCase(".dumbo")) {
                 Player player = ev.getPlayer();
                 if (player.hasPermission("dumbo.quote") || player.isOp()) {
-                    String quote = randomQuote();
                     if (!readyToQuote.get()) {
                         player.sendMessage(ChatColor.DARK_RED + "Error: Quotes are still being initialized, please wait or contact a server administrator.");
                     } else {
+                        String quote = randomQuote();
                         new BukkitRunnable() {
                             @Override
                             public void run() {

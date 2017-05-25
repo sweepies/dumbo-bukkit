@@ -64,6 +64,19 @@
                                     <exclude>*:xml-apis</exclude>
                                     <exclude>org.apache.maven:lib:tests</exclude>
                                     <exclude>log4j:log4j:jar:</exclude>
+                                    <exclude>com.avaje:*</exclude>
+                                    <exclude>com.google.*:*</exclude>
+                                    <exclude>javax.persistence:*</exclude>
+                                    <exclude>mojang-translations:*</exclude>
+                                    <exclude>net.md-5:*</exclude>
+                                    <exclude>commons-lang:*</exclude>
+                                    <exclude>com.googlecode.json-simple:*</exclude>
+                                    <exclude>org.bukkit:*</exclude>
+									<exclude>org.avaje:*</exclude>
+                                    <exclude>org.hamcrest:*</exclude>
+                                    <exclude>org.json.simple:*</exclude>
+                                    <exclude>org.spigotmc:*</exclude>
+                                    <exclude>org.yaml:snakeyaml:*</exclude>
                                 </excludes>
                             </artifactSet>
                         </configuration>

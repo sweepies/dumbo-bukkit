@@ -1,10 +1,10 @@
-![Dumbo](https://amberfall.science/assets/dumbo/logo.png)
+![Dumbo](https://static.amberfall.science/Dumbo-Bukkit/logo.png)
 
 ![Build status](https://api.travis-ci.org/sweepyoface/dumbo-bukkit.svg?branch=master)
 ![Current release](https://img.shields.io/github/release/sweepyoface/dumbo-bukkit.svg)
 ![License](https://img.shields.io/github/license/sweepyoface/dumbo-bukkit.svg)
 
-This plugin is a simple utility to dispense dumb Qball quotes based on [this list](https://github.com/sweepyoface/dumbo/blob/master/quotes.yml).
+This plugin is a simple utility to dispense Qball quotes based on [this list](https://github.com/sweepyoface/dumbo/blob/master/quotes.yml).
 
 | Command | Permission | Description
 | --- | --- | --- |

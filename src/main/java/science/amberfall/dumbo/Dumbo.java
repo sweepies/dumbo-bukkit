@@ -1,14 +1,5 @@
 package science.amberfall.dumbo;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.URL;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import co.aikar.taskchain.BukkitTaskChainFactory;
 import co.aikar.taskchain.TaskChainFactory;
 import org.bukkit.Bukkit;
@@ -18,25 +9,31 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
+import org.bukkit.event.EventHandler;
+import org.bukkit.event.Listener;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.event.EventHandler;
-import org.bukkit.event.Listener;
+
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.net.URL;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Dumbo extends JavaPlugin implements Listener {
 
     private static Dumbo plugin;
+    private static TaskChainFactory taskChainFactory;
+    private AtomicBoolean readyToQuote = new AtomicBoolean(false);
 
     public static Plugin getPlugin() {
         return plugin;
     }
-
-    private static TaskChainFactory taskChainFactory;
-
-    private AtomicBoolean readyToQuote = new AtomicBoolean(false);
-
 
     @Override
     public void onEnable() {
@@ -49,8 +46,8 @@ public class Dumbo extends JavaPlugin implements Listener {
             getLogger().severe(Locale.ERR_UsePaper);
             disableMe();
         } else {
-            createConfig();
             Bukkit.getServer().getPluginManager().registerEvents(this, this);
+            createConfig();
         }
     }
 
@@ -63,47 +60,37 @@ public class Dumbo extends JavaPlugin implements Listener {
     }
 
     private void createConfig() {
-        try {
+        if (!getDataFolder().exists()) {
+            if (!getDataFolder().mkdirs()) {
+                getLogger().severe(Locale.ERR_UnableToCreateDataFolder);
+                disableMe();
+            }
+        }
 
-            if (!getDataFolder().exists()) {
+        File file = new File(getDataFolder(), "config.yml");
+
+        if (!file.exists()) {
+            getLogger().info(Locale.QUOTES_FetchingQuotes);
+            taskChainFactory.newChain().asyncFirst(() -> {
                 try {
-                    if (!getDataFolder().mkdirs()) {
-                        getLogger().severe(Locale.ERR_UnableToCreateDataFolder);
-                        disableMe();
-                    }
-                } catch (Exception e) {
-                    getLogger().severe(Locale.ERR_UnableToCreateDataFolderWithException + e.getMessage());
-                    e.printStackTrace();
+                    InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
+                    YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in));
+                    in.close(); // Say goodbye to memory leaks
+                    return yaml.getStringList("quotes");
+
+                } catch (IOException e) {
+                    getLogger().severe(Locale.ERR_UnableToFetchQuotes);
                     disableMe();
+                    return null;
                 }
-
-            }
-
-            File file = new File(getDataFolder(), "config.yml");
-
-            if (!file.exists()) {
-                getLogger().info(Locale.QUOTES_FetchingQuotes);
-                taskChainFactory.newChain().asyncFirst(() -> {
-                    try {
-                        InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
-                        YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in));
-                        return yaml.getStringList("quotes");
-                    } catch (IOException e) {
-                        getLogger().severe(Locale.ERR_UnableToFetchQuotes);
-                        disableMe();
-                        return null;
-                    }
-                }).abortIfNull().syncLast(quotes -> {
-                    Dumbo.getPlugin().getConfig().addDefault("color", "&6");
-                    Dumbo.getPlugin().getConfig().addDefault("quotes", quotes);
-                    Dumbo.getPlugin().getConfig().options().copyDefaults(true);
-                    saveConfig();
-                    reloadConfig();
-                    getLogger().info("Done!");
-                }).execute(() -> readyToQuote.set(true));
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
+            }).abortIfNull().syncLast(quotes -> {
+                Dumbo.getPlugin().getConfig().addDefault("color", "&6");
+                Dumbo.getPlugin().getConfig().addDefault("quotes", quotes);
+                Dumbo.getPlugin().getConfig().options().copyDefaults(true);
+                saveConfig();
+                reloadConfig();
+                getLogger().info(Locale.QUOTES_DoneFetching);
+            }).execute(() -> readyToQuote.set(true));
         }
     }
 
@@ -116,7 +103,6 @@ public class Dumbo extends JavaPlugin implements Listener {
 
     @Override
     public boolean onCommand(CommandSender sender, Command cmd, String label, String[] args) {
-
         if (label.equalsIgnoreCase(("dumbo"))) {
             if (!(sender instanceof ConsoleCommandSender)) {
                 Player player = (Player) sender;
@@ -166,7 +152,7 @@ public class Dumbo extends JavaPlugin implements Listener {
                             public void run() {
                                 Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', Dumbo.getPlugin().getConfig().getString("color")) + randomQuote());
                             }
-                        }.runTaskLater(this, 1);
+                        }.runTaskLater(this, 1); // So the quote is sent after the .dumbo chat message
                     }
                 } else {
                     player.sendMessage(ChatColor.DARK_RED + Locale.CMD_NoAccess);

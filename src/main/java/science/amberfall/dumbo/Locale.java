@@ -10,6 +10,6 @@ public class Locale {
     public static String QUOTES_NotInitialized = "Quotes are still being initialized. Please wait or contact a server administrator.";
     public static String CMD_NoAccess = "You do not have access to that command.";
     public static String CMD_UnknownArg = "Unknown argument. See /help dumbo";
-    public static String CMD_CantRunFromConsole = "That command cannot by run by the console.";
+    public static String CMD_CantRunFromConsole = "That command cannot be run by the console.";
     public static String PLUGIN_ConfigReloaded = "Dumbo config reloaded!";
 }

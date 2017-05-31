@@ -73,7 +73,7 @@ public class Dumbo extends JavaPlugin implements Listener {
             getLogger().info(Locale.QUOTES_FetchingQuotes);
             taskChainFactory.newChain().asyncFirst(() -> {
                 try {
-                    InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo/master/quotes.yml").openStream();
+                    InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo-quotes/master/quotes.yml").openStream();
                     YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in));
                     in.close(); // Say goodbye to memory leaks
                     return yaml.getStringList("quotes");

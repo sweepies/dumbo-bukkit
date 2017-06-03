@@ -6,14 +6,19 @@
 
     <groupId>science.amberfall</groupId>
     <artifactId>dumbo</artifactId>
-    <version>2.1.2</version>
+    <version>2.2</version>
 
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     </properties>
 
     <repositories>
+        <repository>
+            <id>Central</id>
+            <url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+        </repository>
         <repository>
             <id>Aikar</id>
             <url>http://ci.emc.gs/nexus/content/groups/aikar/</url>
@@ -34,6 +39,11 @@
             <groupId>co.aikar</groupId>
             <artifactId>taskchain-bukkit</artifactId>
             <version>3.6.0</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.5</version>
         </dependency>
     </dependencies>
 

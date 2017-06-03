@@ -1,6 +1,6 @@
 name: Dumbo
 main: science.amberfall.dumbo.Dumbo
-version: 2.1.1
+version: 2.2
 author: Sweepyoface
 website: https://github.com/Sweepyoface/dumbo-bukkit/
 commands:
@@ -17,6 +17,10 @@ commands:
     usage: /dumbo version
     aliases: dumbo ver
     permission: dumbo.version
+  dumbo getquotes:
+    description: Update the quotes file from the repository.
+    usage: /dumbo getquotes
+    permission: dumbo.getquotes
 
 permissions:
   dumbo.quote:
@@ -28,3 +32,6 @@ permissions:
   dumbo.version:
     description: /dumbo version command
     default: true
+  dumbo.getquotes:
+    description: /dumbo getquotes command
+    default: op

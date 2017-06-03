@@ -2,12 +2,13 @@ package science.amberfall.dumbo;
 
 import co.aikar.taskchain.BukkitTaskChainFactory;
 import co.aikar.taskchain.TaskChainFactory;
+import com.google.gson.Gson;
+import org.apache.commons.io.FileUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.ConsoleCommandSender;
-import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -16,17 +17,14 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.net.URL;
-import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Dumbo extends JavaPlugin implements Listener {
 
+    private File quotesFile = new File(getDataFolder(), "quotes.json");
     private static Dumbo plugin;
     private static TaskChainFactory taskChainFactory;
     private AtomicBoolean readyToQuote = new AtomicBoolean(false);
@@ -42,24 +40,29 @@ public class Dumbo extends JavaPlugin implements Listener {
 
         taskChainFactory = BukkitTaskChainFactory.create(this);
 
+        // Disable if server is branded Spigot
         if (Bukkit.getServer().getVersion().contains("git-Spigot")) {
             getLogger().severe(Locale.ERR_UsePaper);
             disableMe();
         } else {
             Bukkit.getServer().getPluginManager().registerEvents(this, this);
-            createConfig();
+            saveDefaultConfig();
+            fetchQuotes(null);
         }
     }
 
     @Override
     public void onDisable() {}
 
+    // Print a message and disable the plugin
     private void disableMe() {
         getLogger().severe(Locale.ERR_DisablingPlugin);
         Bukkit.getPluginManager().disablePlugin(this);
     }
 
-    private void createConfig() {
+
+    private void fetchQuotes(Player p) {
+
         if (!getDataFolder().exists()) {
             if (!getDataFolder().mkdirs()) {
                 getLogger().severe(Locale.ERR_UnableToCreateDataFolder);
@@ -67,38 +70,97 @@ public class Dumbo extends JavaPlugin implements Listener {
             }
         }
 
-        File file = new File(getDataFolder(), "config.yml");
+        if (!quotesFile.exists()) {
 
-        if (!file.exists()) {
-            getLogger().info(Locale.QUOTES_FetchingQuotes);
+            // Make sure to not try to get a quote when it's fetching
+            readyToQuote.set(false);
+
             taskChainFactory.newChain().asyncFirst(() -> {
                 try {
-                    InputStream in = new URL("https://raw.githubusercontent.com/sweepyoface/dumbo-quotes/master/quotes.yml").openStream();
-                    YamlConfiguration yaml = YamlConfiguration.loadConfiguration(new InputStreamReader(in));
-                    in.close(); // Say goodbye to memory leaks
-                    return yaml.getStringList("quotes");
-
-                } catch (IOException e) {
+                    getLogger().info(Locale.QUOTES_FetchingQuotes);
+                    FileUtils.copyURLToFile(new URL("https://raw.githubusercontent.com/sweepyoface/dumbo-quotes/master/quotes.json"), quotesFile);
+                    getLogger().info(Locale.QUOTES_DoneFetching);
+                    return true;
+                } catch (Exception e) {
+                    // If this method was called via the updateQuotes method (from the command) as a result of the quotes file not existing, send the player the message as well
+                    if (p != null) {
+                        p.sendMessage(ChatColor.RED + Locale.ERR_UnableToFetchQuotes);
+                    }
                     getLogger().severe(Locale.ERR_UnableToFetchQuotes);
                     disableMe();
                     return null;
                 }
-            }).abortIfNull().syncLast(quotes -> {
-                Dumbo.getPlugin().getConfig().addDefault("color", "&6");
-                Dumbo.getPlugin().getConfig().addDefault("quotes", quotes);
-                Dumbo.getPlugin().getConfig().options().copyDefaults(true);
-                saveConfig();
+            }).abortIfNull().syncLast(outcome -> {
                 reloadConfig();
-                getLogger().info(Locale.QUOTES_DoneFetching);
+                if (p != null) {
+                    p.sendMessage(ChatColor.GREEN + Locale.QUOTES_DoneFetching);
+                }
             }).execute(() -> readyToQuote.set(true));
+
+        } else {
+            getLogger().info(Locale.QUOTES_FileExists);
+            readyToQuote.set(true);
+        }
+    }
+
+    private void updateQuotes(Player p) {
+
+        if (quotesFile.exists()) {
+            try {
+
+                quotesFile.delete();
+
+                // Make sure to not try to get a quote when it's updating
+                readyToQuote.set(false);
+
+                taskChainFactory.newChain().asyncFirst(() -> {
+                    try {
+                        getLogger().info(Locale.QUOTES_FetchingQuotes);
+                        FileUtils.copyURLToFile(new URL("https://raw.githubusercontent.com/sweepyoface/dumbo-quotes/master/quotes.json"), quotesFile);
+                        getLogger().info(Locale.QUOTES_DoneFetching);
+                        return true;
+                    } catch (Exception e) {
+                        getLogger().severe(Locale.ERR_UnableToFetchQuotes);
+                        disableMe();
+                        return null;
+                    }
+                }).syncLast(outcome -> {
+                    reloadConfig();
+                    if (outcome) {
+                        p.sendMessage(ChatColor.GREEN + Locale.QUOTES_DoneFetching);
+                    } else {
+                        p.sendMessage(ChatColor.RED + Locale.ERR_UnableToFetchQuotes);
+                    }
+                }).execute(() -> {
+                    readyToQuote.set(true);
+                });
+
+            } catch (Exception e) {
+                getLogger().severe(Locale.ERR_UnableToDeleteQuotes);
+                p.sendMessage(ChatColor.RED + Locale.ERR_UnableToDeleteQuotes);
+            }
+        } else {
+            fetchQuotes(p);
         }
     }
 
     public String randomQuote() {
-        Random random = new Random();
-        List<String> quotes = this.getConfig().getStringList("quotes");
-        Integer quote = random.nextInt(quotes.size());
-        return quotes.get(quote);
+        if (quotesFile.exists()) {
+            try {
+                FileReader reader = new FileReader(quotesFile);
+                Gson gson = new Gson();
+                Quotes quotes = gson.fromJson(reader, Quotes.class);
+                String[] quotesList = quotes.getQuotes();
+                Random random = new Random();
+                Integer quote = random.nextInt(quotesList.length);
+                return ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + quotesList[quote];
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        } else {
+            return ChatColor.RED + Locale.ERR_UnableToReadQuotesFile;
+        }
+        return null;
     }
 
     @Override
@@ -111,7 +173,7 @@ public class Dumbo extends JavaPlugin implements Listener {
                         if (!readyToQuote.get()) {
                             player.sendMessage(ChatColor.DARK_RED + Locale.QUOTES_NotInitialized);
                         } else {
-                            Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + randomQuote());
+                            Bukkit.getServer().broadcastMessage(randomQuote());
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("reload")) {
@@ -126,6 +188,11 @@ public class Dumbo extends JavaPlugin implements Listener {
                         player.sendMessage(ChatColor.GREEN + "Dumbo version: " + this.getDescription().getVersion());
                     } else {
                         player.sendMessage(ChatColor.DARK_RED + Locale.CMD_NoAccess);
+                    }
+                } else if (args[0].equalsIgnoreCase("getquotes")) {
+                    if (player.hasPermission("dumbo.getquotes") || player.isOp()) {
+                        player.sendMessage(ChatColor.YELLOW + Locale.QUOTES_FetchingQuotes);
+                        updateQuotes(player);
                     }
                 } else {
                     player.sendMessage(ChatColor.RED + Locale.CMD_UnknownArg);

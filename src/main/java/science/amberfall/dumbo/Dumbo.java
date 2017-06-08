@@ -49,6 +49,7 @@ public class Dumbo extends JavaPlugin implements Listener {
             saveDefaultConfig();
             fetchQuotes(null);
         }
+
     }
 
     @Override
@@ -62,13 +63,6 @@ public class Dumbo extends JavaPlugin implements Listener {
 
 
     private void fetchQuotes(Player p) {
-
-        if (!getDataFolder().exists()) {
-            if (!getDataFolder().mkdirs()) {
-                getLogger().severe(Locale.ERR_UnableToCreateDataFolder);
-                disableMe();
-            }
-        }
 
         if (!quotesFile.exists()) {
 
@@ -169,7 +163,7 @@ public class Dumbo extends JavaPlugin implements Listener {
             if (!(sender instanceof ConsoleCommandSender)) {
                 Player player = (Player) sender;
                 if (args.length == 0) {
-                    if (player.hasPermission("dumbo.quote") || player.isOp()) {
+                    if (player.hasPermission("dumbo.quote")) {
                         if (!readyToQuote.get()) {
                             player.sendMessage(ChatColor.DARK_RED + Locale.QUOTES_NotInitialized);
                         } else {
@@ -177,20 +171,20 @@ public class Dumbo extends JavaPlugin implements Listener {
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("reload")) {
-                    if (player.hasPermission("dumbo.reload") || player.isOp()) {
+                    if (player.hasPermission("dumbo.reload")) {
                         this.reloadConfig();
                         player.sendMessage(ChatColor.GREEN + Locale.PLUGIN_ConfigReloaded);
                     } else {
                         player.sendMessage(ChatColor.DARK_RED + Locale.CMD_NoAccess);
                     }
-                } else if (args[0].equalsIgnoreCase("ver") || (args[0].equalsIgnoreCase("version"))) {
-                    if (player.hasPermission("dumbo.version") || player.isOp()) {
+                } else if (args[0].toLowerCase().matches("(version|ver)")) {
+                    if (player.hasPermission("dumbo.version")) {
                         player.sendMessage(ChatColor.GREEN + "Dumbo version: " + this.getDescription().getVersion());
                     } else {
                         player.sendMessage(ChatColor.DARK_RED + Locale.CMD_NoAccess);
                     }
                 } else if (args[0].equalsIgnoreCase("getquotes")) {
-                    if (player.hasPermission("dumbo.getquotes") || player.isOp()) {
+                    if (player.hasPermission("dumbo.getquotes")) {
                         player.sendMessage(ChatColor.YELLOW + Locale.QUOTES_FetchingQuotes);
                         updateQuotes(player);
                     }
@@ -210,7 +204,7 @@ public class Dumbo extends JavaPlugin implements Listener {
             String[] msgArray = ev.getMessage().trim().split("\\s+");
             if (msgArray[0].equalsIgnoreCase(".dumbo")) {
                 Player player = ev.getPlayer();
-                if (player.hasPermission("dumbo.quote") || player.isOp()) {
+                if (player.hasPermission("dumbo.quote")) {
                     if (!readyToQuote.get()) {
                         player.sendMessage(ChatColor.DARK_RED + Locale.QUOTES_NotInitialized);
                     } else {

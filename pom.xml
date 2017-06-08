@@ -6,7 +6,10 @@
 
     <groupId>science.amberfall</groupId>
     <artifactId>dumbo</artifactId>
-    <version>2.2</version>
+    <version>2.2.1</version>
+    <packaging>jar</packaging>
+
+    <name>Dumbo</name>
 
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -24,16 +27,17 @@
             <url>http://ci.emc.gs/nexus/content/groups/aikar/</url>
         </repository>
         <repository>
-            <id>Spigot</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
+            <id>destroystokyo-repo</id>
+            <url>https://repo.destroystokyo.com/repository/maven-public/</url>
         </repository>
     </repositories>
 
     <dependencies>
         <dependency>
-            <groupId>org.spigotmc</groupId>
-            <artifactId>spigot-api</artifactId>
-            <version>1.11-R0.1-SNAPSHOT</version>
+            <groupId>com.destroystokyo.paper</groupId>
+            <artifactId>paper-api</artifactId>
+            <version>1.11.2-R0.1-SNAPSHOT</version>
+            <scope>provided</scope>
         </dependency>
         <dependency>
             <groupId>co.aikar</groupId>
@@ -44,6 +48,7 @@
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
             <version>2.5</version>
+            <scope>provided</scope>
         </dependency>
     </dependencies>
 
@@ -61,29 +66,7 @@
                             <goal>shade</goal>
                         </goals>
                         <configuration>
-                            <artifactSet>
-                                <excludes>
-                                    <exclude>classworlds:classworlds</exclude>
-                                    <exclude>junit:junit</exclude>
-                                    <exclude>jmock:*</exclude>
-                                    <exclude>*:xml-apis</exclude>
-                                    <exclude>org.apache.maven:lib:tests</exclude>
-                                    <exclude>log4j:log4j:jar:</exclude>
-                                    <exclude>com.avaje:*</exclude>
-                                    <exclude>com.google.*:*</exclude>
-                                    <exclude>javax.persistence:*</exclude>
-                                    <exclude>mojang-translations:*</exclude>
-                                    <exclude>net.md-5:*</exclude>
-                                    <exclude>commons-lang:*</exclude>
-                                    <exclude>com.googlecode.json-simple:*</exclude>
-                                    <exclude>org.bukkit:*</exclude>
-                                    <exclude>org.avaje:*</exclude>
-                                    <exclude>org.hamcrest:*</exclude>
-                                    <exclude>org.json.simple:*</exclude>
-                                    <exclude>org.spigotmc:*</exclude>
-                                    <exclude>org.yaml:snakeyaml:*</exclude>
-                                </excludes>
-                            </artifactSet>
+                            <minimizeJar>true</minimizeJar>
                         </configuration>
                     </execution>
                 </executions>

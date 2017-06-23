@@ -138,7 +138,7 @@ public class Dumbo extends JavaPlugin implements Listener {
         }
     }
 
-    public String randomQuote() {
+    private String randomQuote() {
         if (quotesFile.exists()) {
             try {
                 FileReader reader = new FileReader(quotesFile);
@@ -147,7 +147,7 @@ public class Dumbo extends JavaPlugin implements Listener {
                 String[] quotesList = quotes.getQuotes();
                 Random random = new Random();
                 Integer quote = random.nextInt(quotesList.length);
-                return ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color")) + quotesList[quote];
+                return quotesList[quote];
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -167,7 +167,14 @@ public class Dumbo extends JavaPlugin implements Listener {
                         if (!readyToQuote.get()) {
                             player.sendMessage(ChatColor.DARK_RED + Locale.QUOTES_NotInitialized);
                         } else {
-                            Bukkit.getServer().broadcastMessage(randomQuote());
+                            final String quote = randomQuote();
+                            if (quote.contains("\n")) {
+                                for (String q : quote.split("\n")) {
+                                    Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color") + q));
+                                }
+                            } else {
+                                Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', this.getConfig().getString("color") + quote));
+                            }
                         }
                     }
                 } else if (args[0].equalsIgnoreCase("reload")) {
@@ -201,7 +208,7 @@ public class Dumbo extends JavaPlugin implements Listener {
     @EventHandler
     public void onChat(AsyncPlayerChatEvent ev) {
         if (!ev.isCancelled()) {
-            String[] msgArray = ev.getMessage().trim().split("\\s+");
+            final String[] msgArray = ev.getMessage().trim().split("\\s+");
             if (msgArray[0].equalsIgnoreCase(".dumbo")) {
                 Player player = ev.getPlayer();
                 if (player.hasPermission("dumbo.quote")) {
@@ -211,7 +218,14 @@ public class Dumbo extends JavaPlugin implements Listener {
                         new BukkitRunnable() {
                             @Override
                             public void run() {
-                                Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', Dumbo.getPlugin().getConfig().getString("color")) + randomQuote());
+                                final String quote = randomQuote();
+                                if (quote.contains("\n")) {
+                                    for (String q : quote.split("\n")) {
+                                        Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', Dumbo.getPlugin().getConfig().getString("color") + q));
+                                    }
+                                } else {
+                                    Bukkit.getServer().broadcastMessage(ChatColor.translateAlternateColorCodes('&', Dumbo.getPlugin().getConfig().getString("color") + quote));
+                                }
                             }
                         }.runTaskLater(this, 1); // So the quote is sent after the .dumbo chat message
                     }

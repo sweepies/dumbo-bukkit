@@ -14,7 +14,7 @@ This plugin is a simple utility to dispense Qball quotes based on [this list](ht
 
 
 # Downloading
-You can download the latest build from [Jenkins](https://ci.amberfall.science/job/Dumbo-Bukkit/).
+You can download the latest build from [Jenkins](https://ci.sweepy.pw/job/Dumbo-Bukkit/).
 
 # Building
 1. Install [Apache Maven](https://maven.apache.org/).

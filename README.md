@@ -1,4 +1,4 @@
-![Dumbo](https://static.sweepy.pw/Dumbo-Bukkit/logo.png)
+![Dumbo](https://sweepyoface.github.io/dumbo-bukkit/logo.png)
 
 ![Build status](https://api.travis-ci.org/sweepyoface/dumbo-bukkit.svg?branch=master)
 ![Current release](https://img.shields.io/github/release/sweepyoface/dumbo-bukkit.svg)
